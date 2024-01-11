@@ -2,7 +2,6 @@
 
 <div align="center">
 <a href="https://wakatime.com/@73c50485-c4d6-4789-9cde-59a9c984e815"><img src="https://wakatime.com/badge/user/73c50485-c4d6-4789-9cde-59a9c984e815.svg" alt="Total time coded since Mar 16 2023" /></a>
-<a href="https://hits-app.vercel.app/hits?url=https%3A%2F%2Fgithub.com%2tranosa25"><img src="https://hits-app.vercel.app/hits?url=https%3A%2F%2Fgithub.com%2tranosa25"/></a>
 <br/>
 <a href="mailto:github@sku.moe"><img src="https://img.shields.io/badge/Mail-c14438.svg?&style=flat&logo=gmail&logoColor=#6D4AFF" alt="Mail"></a>
 <a href="https://pypi.org/user/tranosa25/"><img src="https://img.shields.io/badge/PyPI-tranosa25-3775a9.svg?&style=flat&logo=pypi&logoColor=white" alt="PyPI"></a>
