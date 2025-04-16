@@ -38,7 +38,37 @@ run_command() {
 
 # ===============[ SECTION 1: Initial Setup ]===============
 start_section "1.1"
-run_command "apt purge -y cramfs freevxfs hfs hfsplus overlayfs squashfs udf jffs2 usb-storage" "1.1.1 Remove unnecessary filesystems"
+#run_command "apt purge -y cramfs freevxfs hfs hfsplus overlayfs squashfs udf jffs2 usb-storage" "1.1.1 Remove unnecessary filesystems"
+run_command 'bash -c "
+    LOG_DIR=\"/home/homesu/reporting/\"
+    SECTION_DIR=\"\$LOG_DIR/section_logs/1.1\"
+    mkdir -p \"\$SECTION_DIR\"
+    log_file=\"\$SECTION_DIR/details.log\"
+    success_log=\"\$SECTION_DIR/success.log\"
+    error_log=\"\$SECTION_DIR/error.log\"
+    FAILED=0
+    log_success() { echo \"  [✓] \$1\" | tee -a \"\$success_log\"; }
+    log_error()   { echo \"  [✗] \$1\" | tee -a \"\$error_log\"; FAILED=1; }
+    log_info()    { echo \"  [i] \$1\"  | tee -a \"\$log_file\"; }
+    MODULES=(cramfs freevxfs hfs hfsplus overlayfs squashfs udf jffs2 usb-storage)
+    for MOD in \"\${MODULES[@]}\"; do
+        CONF_FILE=\"/etc/modprobe.d/\${MOD}.conf\"
+        log_info \"Checking module: \$MOD\"
+        if find /lib/modules/\$(uname -r)/kernel/fs -name \"\${MOD}.ko\" &>/dev/null || modinfo \"\$MOD\" &>/dev/null; then
+            modprobe -r \"\$MOD\" 2>/dev/null
+            {
+                echo \"install \$MOD /bin/false\"
+                echo \"blacklist \$MOD\"
+            } > \"\$CONF_FILE\"
+            log_success \"\$MOD: Disabled (install /bin/false + blacklist)\"
+        else
+            log_success \"\$MOD: Not found on system\"
+        fi
+    done
+    echo -e \"\\n[+] Done disabling filesystem modules\\n\" | tee -a \"\$log_file\"
+    [ \$FAILED -eq 0 ]
+"' "1.1.1 Remove unnecessary filesystems"
+
 run_command "systemctl mask autofs" "1.1.2 Disable autofs service"
 
 start_section "1.2"
@@ -46,7 +76,8 @@ run_command "apt update && apt upgrade -y" "1.2.1 Update system packages"
 
 start_section "1.3"
 run_command "apt install -y apparmor-utils apparmor-profiles apparmor-profiles-extra" "1.3.1 Install AppArmor"
-run_command "aa-complain /etc/apparmor.d/*" "1.3.2 Set AppArmor profiles to complain mode"
+#run_command "aa-complain /etc/apparmor.d/*" "1.3.2 Set AppArmor profiles to complain mode"
+run_command "aa-complain /etc/apparmor.d/usr.sbin.*" "1.3.2 Set AppArmor profiles to complain mode"
 run_command 'echo "kernel.randomize_va_space = 2" > /etc/sysctl.d/60-aslr.conf' "1.3.3 Enable ASLR"
 run_command 'echo "kernel.yama.ptrace_scope = 1" > /etc/sysctl.d/60-yama.conf' "1.3.4 Restrict ptrace"
 run_command "sysctl --system" "1.3.5 Apply kernel settings"
@@ -218,7 +249,7 @@ run_command 'echo "umask 027" >> /root/.bashrc' "5.4.4 Set bash default root uma
 run_command 'awk -F: '\''($2 == "" ) { print $1 " does not have a password" }'\'' /etc/shadow | tee /var/log/empty_passwords.log' "5.5.1 Audit empty passwords"
 run_command 'grep "^+:" /etc/passwd | tee /var/log/legacy_passwd_entries.log' "6.2.2 Audit legacy NIS entries"
 run_command 'awk -F: '\''($3 == 0) { print $1 }'\'' /etc/passwd | grep -v "^root$" | tee /var/log/uid0_accounts.log' "5.5.3 Audit duplicate UID 0 accounts"
-#run_command 'awk -F: '$3=="0"{print $1":"$3}' /etc/group" | tee /var/log/gid0_accounts.log' "5.5.5 Audit duplicate UID 0 accounts"
+run_command 'awk -F: '$3=="0"{print $1":"$3}' /etc/group" | tee /var/log/gid0_accounts.log' "5.5.5 Audit duplicate UID 0 accounts"
 run_command 'awk -F: '\''($3 == 0) { print $1 }'\'' /etc/passwd | grep -v "^root$" | tee /var/log/uid0_accounts.log' "6.2.3 Audit duplicate UID 0 accounts"
 
 
