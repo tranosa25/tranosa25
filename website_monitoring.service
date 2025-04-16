@@ -1,0 +1,14 @@
+[Unit]
+Description=This service runs the website monitoring module
+After=network.target
+
+[Service]
+WorkingDirectory=/home/splunk/website_monitoring
+ExecStart=/usr/bin/python3 /home/splunk/website_monitoring/check_website.py
+Restart=on-failure
+RestartSec=30
+User=splunk
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
